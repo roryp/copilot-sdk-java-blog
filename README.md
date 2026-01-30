@@ -141,7 +141,7 @@ That’s it—you just called Copilot from Java.
 If you don’t want to create a Maven or Gradle project just to try the SDK, you can run the repo’s example using [JBang](https://www.jbang.dev/). It’s the fastest “kick the tires” option when you’re experimenting or demoing.
 
 ```bash
-jbang jbang-example.java
+jbang jbang_example.java
 ```
 
 JBang handles dependencies automatically, so you can go from copy/paste to running in a single command.
