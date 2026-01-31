@@ -1,3 +1,5 @@
+package com.example.copilot;
+
 import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;
 import com.github.copilot.sdk.json.*;

@@ -33,7 +33,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>Example</mainClass>
+                    <mainClass>com.example.copilot.Example</mainClass>
                 </configuration>
             </plugin>
         </plugins>
