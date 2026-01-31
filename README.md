@@ -8,6 +8,21 @@ The **Copilot SDK for Java** is a community-built SDK that gives you programmati
 
 At a high level, your Java app talks to this SDK, and the SDK drives the Copilot CLI for you. That means you can embed Copilot-style experiences inside your own tools while staying close to the official Copilot ecosystem.
 
+## How it works
+
+When you call the SDK, your prompts are processed on **GitHub's servers**, not locally:
+
+```
+Your Java code → Copilot SDK → Copilot CLI → GitHub API → LLM (cloud)
+```
+
+1. **SDK** spawns/communicates with the Copilot CLI via JSON-RPC
+2. **Copilot CLI** sends HTTPS requests to GitHub's API (authenticated with your GitHub token)
+3. **GitHub's backend** routes to their LLM infrastructure (Azure OpenAI, Anthropic, etc.)
+4. **Response streams back** through the same chain
+
+No local inference occurs—all AI processing is server-side, metered against your Copilot subscription.
+
 ## Quick start
 
 ### Prerequisites
