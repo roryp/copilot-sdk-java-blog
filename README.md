@@ -110,7 +110,7 @@ public class Example {
       client.start().get();
 
       var session = client.createSession(
-        new SessionConfig().setModel("claude-sonnet-4.5")
+        new SessionConfig().setModel("claude-opus-4.5")
       ).get();
 
       var done = new CompletableFuture<Void>();
