@@ -8,12 +8,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Advanced Copilot SDK Example
  * 
  * Demonstrates complex behaviors:
+ * - System messages for AI customization
  * - Multi-turn conversations with context retention
  * - Structured output requests (JSON formatting)
  * - Code generation and analysis
  * - Streaming response handling with progress tracking
  * - Error handling
- * - Conversation history management
  */
 public class AdvancedExample {
 
@@ -23,7 +23,7 @@ public class AdvancedExample {
         try (var client = new CopilotClient()) {
             client.start().get();
             
-            // Demo 1: Code Review Assistant
+            // Demo 1: Code Review with System Message
             runCodeReviewDemo(client);
             
             // Demo 2: Multi-turn Conversation
@@ -40,13 +40,24 @@ public class AdvancedExample {
     }
 
     /**
-     * Demo 1: Code Review with detailed analysis
+     * Demo 1: Code Review with System Message for persona
      */
     private static void runCodeReviewDemo(CopilotClient client) throws Exception {
         System.out.println("\n--- Demo 1: Code Review Assistant ---\n");
         
+        // Use SystemMessageConfig to set AI behavior
         var session = client.createSession(
-            new SessionConfig().setModel("claude-opus-4.5")
+            new SessionConfig()
+                .setModel("claude-opus-4.5")
+                .setSystemMessage(new SystemMessageConfig()
+                    .setMode(SystemMessageMode.APPEND)
+                    .setContent("""
+                        <rules>
+                        - You are an expert Java code reviewer
+                        - Focus on thread safety, null safety, and validation
+                        - Provide actionable improvements with code examples
+                        </rules>
+                        """))
         ).get();
 
         String codeToReview = """
@@ -68,18 +79,10 @@ public class AdvancedExample {
             """;
 
         String prompt = String.format("""
-            You are an expert Java developer. Review this Java code for:
-            1. Thread safety issues
-            2. Null safety concerns
-            3. Missing validation
-            4. Suggested improvements
-            
-            Code:
+            Review this Java code:
             ```java
             %s
             ```
-            
-            Provide a brief, actionable review.
             """, codeToReview);
 
         streamResponse(session, prompt);
@@ -92,12 +95,16 @@ public class AdvancedExample {
         System.out.println("\n--- Demo 2: Multi-turn Conversation ---\n");
         
         var session = client.createSession(
-            new SessionConfig().setModel("claude-opus-4.5")
+            new SessionConfig()
+                .setModel("claude-opus-4.5")
+                .setSystemMessage(new SystemMessageConfig()
+                    .setMode(SystemMessageMode.APPEND)
+                    .setContent("<rules>You are a concise programming tutor.</rules>"))
         ).get();
 
         // First turn - establish context
         System.out.println("[User] What is the Factory Pattern?");
-        streamResponse(session, "Explain the Factory Pattern in Java in 2-3 sentences. Be concise.");
+        streamResponse(session, "Explain the Factory Pattern in Java in 2-3 sentences.");
         
         // Second turn - builds on previous answer
         System.out.println("\n[User] Show me a simple example.");
