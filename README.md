@@ -97,6 +97,8 @@ implementation 'io.github.copilot-community-sdk:copilot-sdk:1.0.5'
 This example starts a client, opens a session, streams assistant messages via events, and exits once the session goes idle.
 
 ```java
+package com.example.copilot;
+
 import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;
 import com.github.copilot.sdk.json.*;
@@ -130,7 +132,7 @@ public class Example {
 Run it:
 
 ```bash
-mvn compile exec:java -Dexec.mainClass="Example"
+mvn compile exec:java
 ```
 
 Or, if you prefer using the Maven wrapper (which doesn't require Maven to be installed globally):
@@ -140,7 +142,7 @@ Or, if you prefer using the Maven wrapper (which doesn't require Maven to be ins
 mvn wrapper:wrapper
 
 # Run with the wrapper
-./mvnw compile exec:java -Dexec.mainClass="Example"
+./mvnw compile exec:java
 ```
 
 And you should see output like:
@@ -152,8 +154,9 @@ And you should see output like:
 That’s it—you just called Copilot from Java.
 ## Advanced Example
 
-For more complex scenarios, check out `AdvancedExample.java` which demonstrates:
+For more complex scenarios, check out [`AdvancedExample.java`](src/main/java/com/example/copilot/AdvancedExample.java) which demonstrates:
 
+- **System Messages** – Customize AI behavior with `SystemMessageConfig`
 - **Code Review** – Submit code for AI analysis of thread safety, null safety, and best practices
 - **Multi-turn Conversations** – Context-aware conversations where each prompt builds on previous responses
 - **Structured JSON Output** – Request responses in specific JSON formats for parsing
@@ -162,7 +165,7 @@ For more complex scenarios, check out `AdvancedExample.java` which demonstrates:
 Run it:
 
 ```bash
-mvn compile exec:java -Dexec.mainClass="AdvancedExample"
+mvn compile exec:java -Dexec.mainClass=com.example.copilot.AdvancedExample
 ```
 ## Prefer “zero project setup”? Use JBang
 
