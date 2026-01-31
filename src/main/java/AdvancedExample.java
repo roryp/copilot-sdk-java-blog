@@ -2,18 +2,16 @@ import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;
 import com.github.copilot.sdk.json.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Advanced Copilot SDK Example
  * 
- * Demonstrates complex behaviors:
+ * Demonstrates:
  * - System messages for AI customization
  * - Multi-turn conversations with context retention
- * - Structured output requests (JSON formatting)
- * - Code generation and analysis
- * - Streaming response handling with progress tracking
- * - Error handling
+ * - Structured JSON output requests
+ * - Code generation
+ * - Streaming response handling
  */
 public class AdvancedExample {
 
@@ -163,17 +161,14 @@ public class AdvancedExample {
     }
 
     /**
-     * Helper method to stream and display responses with progress tracking
+     * Stream and display responses
      */
     private static void streamResponse(CopilotSession session, String prompt) throws Exception {
         var done = new CompletableFuture<Void>();
-        var tokenCount = new AtomicInteger(0);
         
         session.on(evt -> {
             if (evt instanceof AssistantMessageEvent msg) {
-                String content = msg.getData().getContent();
-                tokenCount.incrementAndGet();
-                System.out.print(content);
+                System.out.print(msg.getData().getContent());
             } else if (evt instanceof SessionErrorEvent err) {
                 System.err.println("\n[Error: " + err.getData().getMessage() + "]");
                 done.completeExceptionally(new RuntimeException(err.getData().getMessage()));
@@ -184,7 +179,6 @@ public class AdvancedExample {
 
         session.send(new MessageOptions().setPrompt(prompt)).get();
         done.get();
-        
-        System.out.println("\n[Chunks received: " + tokenCount.get() + "]");
+        System.out.println();
     }
 }
