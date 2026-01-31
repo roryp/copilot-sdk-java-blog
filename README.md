@@ -135,7 +135,20 @@ And you should see output like:
 ```
 
 That’s it—you just called Copilot from Java.
+## Advanced Example
 
+For more complex scenarios, check out `AdvancedExample.java` which demonstrates:
+
+- **Code Review** – Submit code for AI analysis of thread safety, null safety, and best practices
+- **Multi-turn Conversations** – Context-aware conversations where each prompt builds on previous responses
+- **Structured JSON Output** – Request responses in specific JSON formats for parsing
+- **Code Generation** – Generate production-ready Java code with specific requirements
+
+Run it:
+
+```bash
+mvn compile exec:java -Dexec.mainClass="AdvancedExample"
+```
 ## Prefer “zero project setup”? Use JBang
 
 If you don’t want to create a Maven or Gradle project just to try the SDK, you can run the repo’s example using [JBang](https://www.jbang.dev/). It’s the fastest “kick the tires” option when you’re experimenting or demoing.
