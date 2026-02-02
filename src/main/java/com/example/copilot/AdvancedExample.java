@@ -48,7 +48,7 @@ public class AdvancedExample {
         // Use SystemMessageConfig to set AI behavior
         var session = client.createSession(
             new SessionConfig()
-                .setModel("claude-opus-4.5")
+                .setModel("claude-sonnet-4.5")
                 .setSystemMessage(new SystemMessageConfig()
                     .setMode(SystemMessageMode.APPEND)
                     .setContent("""
@@ -96,7 +96,7 @@ public class AdvancedExample {
         
         var session = client.createSession(
             new SessionConfig()
-                .setModel("claude-opus-4.5")
+                .setModel("claude-sonnet-4.5")
                 .setSystemMessage(new SystemMessageConfig()
                     .setMode(SystemMessageMode.APPEND)
                     .setContent("<rules>You are a concise programming tutor.</rules>"))
@@ -122,7 +122,7 @@ public class AdvancedExample {
         System.out.println("\n--- Demo 3: Structured JSON Output ---\n");
         
         var session = client.createSession(
-            new SessionConfig().setModel("claude-opus-4.5")
+            new SessionConfig().setModel("claude-sonnet-4.5")
         ).get();
 
         String prompt = """
@@ -145,7 +145,7 @@ public class AdvancedExample {
         System.out.println("\n--- Demo 4: Code Generation ---\n");
         
         var session = client.createSession(
-            new SessionConfig().setModel("claude-opus-4.5")
+            new SessionConfig().setModel("claude-sonnet-4.5")
         ).get();
 
         String prompt = """
