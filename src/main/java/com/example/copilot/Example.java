@@ -11,13 +11,15 @@ public class Example {
             client.start().get();
 
             var session = client.createSession(
-                new SessionConfig().setModel("claude-sonnet-4.5")
+                new SessionConfig()
+                    .setModel("claude-sonnet-4.5")
+                    .setOnPermissionRequest(PermissionHandler.APPROVE_ALL)
             ).get();
 
             var done = new CompletableFuture<Void>();
             session.on(evt -> {
                 if (evt instanceof AssistantMessageEvent msg) {
-                    System.out.println(msg.getData().getContent());
+                    System.out.println(msg.getData().content());
                 } else if (evt instanceof SessionIdleEvent) {
                     done.complete(null);
                 }

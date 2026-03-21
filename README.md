@@ -80,16 +80,16 @@ If you’re using Maven:
 
 ```xml
 <dependency>
-  <groupId>io.github.copilot-community-sdk</groupId>
-  <artifactId>copilot-sdk</artifactId>
-  <version>1.0.5</version>
+  <groupId>com.github</groupId>
+  <artifactId>copilot-sdk-java</artifactId>
+  <version>0.1.32-java.0</version>
 </dependency>
 ```
 
 Or Gradle:
 
 ```groovy
-implementation 'io.github.copilot-community-sdk:copilot-sdk:1.0.5'
+implementation 'com.github:copilot-sdk-java:0.1.32-java.0'
 ```
 
 ### Your first “Copilot from Java” call
@@ -110,13 +110,15 @@ public class Example {
       client.start().get();
 
       var session = client.createSession(
-        new SessionConfig().setModel("claude-sonnet-4.5")
+        new SessionConfig()
+          .setModel("claude-sonnet-4.5")
+          .setOnPermissionRequest(PermissionHandler.APPROVE_ALL)
       ).get();
 
       var done = new CompletableFuture<Void>();
       session.on(evt -> {
         if (evt instanceof AssistantMessageEvent msg) {
-          System.out.println(msg.getData().getContent());
+          System.out.println(msg.getData().content());
         } else if (evt instanceof SessionIdleEvent) {
           done.complete(null);
         }
@@ -128,6 +130,8 @@ public class Example {
   }
 }
 ```
+
+> **Note:** The `PermissionHandler.APPROVE_ALL` handler is required when creating a session. It grants all permission requests from the SDK. For production use, consider implementing a custom handler that selectively approves permissions.
 
 Run it:
 

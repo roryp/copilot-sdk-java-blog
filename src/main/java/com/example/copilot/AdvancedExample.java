@@ -49,6 +49,7 @@ public class AdvancedExample {
         var session = client.createSession(
             new SessionConfig()
                 .setModel("claude-sonnet-4.5")
+                .setOnPermissionRequest(PermissionHandler.APPROVE_ALL)
                 .setSystemMessage(new SystemMessageConfig()
                     .setMode(SystemMessageMode.APPEND)
                     .setContent("""
@@ -97,6 +98,7 @@ public class AdvancedExample {
         var session = client.createSession(
             new SessionConfig()
                 .setModel("claude-sonnet-4.5")
+                .setOnPermissionRequest(PermissionHandler.APPROVE_ALL)
                 .setSystemMessage(new SystemMessageConfig()
                     .setMode(SystemMessageMode.APPEND)
                     .setContent("<rules>You are a concise programming tutor.</rules>"))
@@ -122,7 +124,9 @@ public class AdvancedExample {
         System.out.println("\n--- Demo 3: Structured JSON Output ---\n");
         
         var session = client.createSession(
-            new SessionConfig().setModel("claude-sonnet-4.5")
+            new SessionConfig()
+                .setModel("claude-sonnet-4.5")
+                .setOnPermissionRequest(PermissionHandler.APPROVE_ALL)
         ).get();
 
         String prompt = """
@@ -145,7 +149,9 @@ public class AdvancedExample {
         System.out.println("\n--- Demo 4: Code Generation ---\n");
         
         var session = client.createSession(
-            new SessionConfig().setModel("claude-sonnet-4.5")
+            new SessionConfig()
+                .setModel("claude-sonnet-4.5")
+                .setOnPermissionRequest(PermissionHandler.APPROVE_ALL)
         ).get();
 
         String prompt = """
@@ -170,10 +176,10 @@ public class AdvancedExample {
         
         session.on(evt -> {
             if (evt instanceof AssistantMessageEvent msg) {
-                System.out.print(msg.getData().getContent());
+                System.out.print(msg.getData().content());
             } else if (evt instanceof SessionErrorEvent err) {
-                System.err.println("\n[Error: " + err.getData().getMessage() + "]");
-                done.completeExceptionally(new RuntimeException(err.getData().getMessage()));
+                System.err.println("\n[Error: " + err.getData().message() + "]");
+                done.completeExceptionally(new RuntimeException(err.getData().message()));
             } else if (evt instanceof SessionIdleEvent) {
                 done.complete(null);
             }

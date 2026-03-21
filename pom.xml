@@ -21,9 +21,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.copilot-community-sdk</groupId>
-            <artifactId>copilot-sdk</artifactId>
-            <version>1.0.5</version>
+            <groupId>com.github</groupId>
+            <artifactId>copilot-sdk-java</artifactId>
+            <version>0.1.32-java.0</version>
         </dependency>
     </dependencies>
 
