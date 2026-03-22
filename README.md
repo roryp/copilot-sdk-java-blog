@@ -185,9 +185,6 @@ If you can describe it as “Copilot, but inside my product,” it’s a good fi
 
 You can build internal coding assistants that understand your team’s conventions, automated PR reviewers that summarize changes and suggest improvements, test generators that align with your project patterns, documentation bots that stay in sync with the codebase, or agent-style workflows that can reason, plan, and execute across tools you define.
 
-Already in production: the **JMeter Copilot Plugin** for AI-assisted load testing.  
-https://github.com/brunoborges/jmeter-copilot-plugin
-
 ## Learn more
 
 - **Official SDK repository:** https://github.com/github/copilot-sdk-java
