@@ -8,6 +8,10 @@ At a high level, your Java app talks to this SDK, and the SDK drives the Copilot
 
 ## How it works
 
+<img src="docs/sdk-architecture.png" alt="Copilot SDK for Java — How It Works" width="800"/>
+
+*This diagram shows the end-to-end request flow from your Java code through the SDK, CLI, and GitHub API to the cloud LLM.*
+
 When you call the SDK, your prompts are processed on **GitHub's servers**, not locally:
 
 ```
@@ -24,6 +28,10 @@ No local inference occurs—all AI processing is server-side, metered against yo
 ## Quick start
 
 ### Prerequisites
+
+<img src="docs/quick-start-steps.png" alt="Quick Start — Prerequisites" width="800"/>
+
+*This diagram shows the four setup steps needed before writing your first Copilot SDK call.*
 
 Before you write a line of code, make sure your machine is ready.
 
@@ -156,6 +164,10 @@ And you should see output like:
 That’s it—you just called Copilot from Java.
 ## Advanced Example
 
+<img src="docs/advanced-features.png" alt="Advanced SDK Features" width="800"/>
+
+*This diagram shows the five advanced capabilities available through the SDK.*
+
 For more complex scenarios, check out [`AdvancedExample.java`](src/main/java/com/example/copilot/AdvancedExample.java) which demonstrates:
 
 - **System Messages** – Customize AI behavior with `SystemMessageConfig`
@@ -180,6 +192,9 @@ jbang jbang_example.java
 JBang handles dependencies automatically, so you can go from copy/paste to running in a single command.
 
 ## What can you build?
+<img src="docs/what-can-you-build.png" alt="What Can You Build?" width="800"/>
+
+*This diagram shows the types of tools and workflows you can build with the Copilot SDK.*
 
 If you can describe it as “Copilot, but inside my product,” it’s a good fit.
 
