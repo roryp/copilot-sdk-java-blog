@@ -80,6 +80,32 @@ If you're not authenticated, it will open a browser window for GitHub OAuth. Com
 
 > **Tip:** If you're behind a corporate proxy or firewall, ensure `copilot` can reach GitHub's APIs. You may need to configure `HTTP_PROXY` or `HTTPS_PROXY` environment variables.
 
+### Dev Container / GitHub Codespaces
+
+This repo includes a [Dev Container](.devcontainer/devcontainer.json) configuration that sets up everything you need automatically:
+
+- **Java 21** (via `mcr.microsoft.com/devcontainers/java:21-bookworm`)
+- **GitHub CLI** (`gh`) with the **Copilot CLI extension** (`gh-copilot`)
+- **Maven dependencies** pre-resolved on container creation
+- **VS Code extensions**: Java Extension Pack, Spring Boot Tools, GitHub Copilot
+
+To get started:
+
+1. **Open in a Codespace** — click the green "Code" button on GitHub and select "Open with Codespaces", or
+2. **Open locally in VS Code** — with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed, open this repo and choose "Reopen in Container"
+
+Once the container is running, authenticate with the GitHub CLI:
+
+```bash
+gh auth login
+```
+
+Then install the Copilot CLI extension (if it wasn't auto-installed during container creation):
+
+```bash
+gh extension install github/gh-copilot
+```
+
 ### Add the dependency
 
 If you’re using Maven:
