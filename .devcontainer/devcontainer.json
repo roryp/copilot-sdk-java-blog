@@ -2,7 +2,10 @@
   "name": "Copilot SDK Task Tracker",
   "image": "mcr.microsoft.com/devcontainers/java:21-bookworm",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
   },
   "customizations": {
     "vscode": {
@@ -18,6 +21,7 @@
   },
   "forwardPorts": [8080],
   "postCreateCommand": {
+    "install-copilot-cli": "npm install -g @github/copilot || true",
     "install-gh-copilot": "gh extension install github/gh-copilot || true",
     "resolve-deps": "./mvnw dependency:resolve"
   },
