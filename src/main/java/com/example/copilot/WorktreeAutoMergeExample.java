@@ -14,8 +14,10 @@ import java.util.concurrent.CompletableFuture;
  * Demonstrates using Git worktrees + Copilot SDK to:
  *   1. Create a Git worktree for a feature branch
  *   2. Use Copilot to generate code in the worktree
- *   3. Use Copilot to review the generated code
- *   4. Commit, merge back into main, and clean up
+ *   3. Write generated code to the worktree
+ *   4. Use Copilot to review the generated code
+ *   5. Commit changes in the worktree
+ *   6. Merge the feature branch back into main and clean up
  *
  * Idempotent: can be run repeatedly without manual cleanup.
  */
