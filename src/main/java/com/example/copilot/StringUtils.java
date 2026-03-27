@@ -1,1 +1,1 @@
-StringUtils.java already exists with the requested methods implemented using Java 21 features (var keyword).
+Created `StringUtils.java` with reverse, isPalindrome, and truncate methods using Java 21 features (var, final class).
