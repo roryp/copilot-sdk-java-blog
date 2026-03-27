@@ -3,9 +3,7 @@ package com.example.copilot;
 import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;
 import com.github.copilot.sdk.json.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
@@ -18,10 +16,13 @@ import java.util.concurrent.CompletableFuture;
  *   2. Use Copilot to generate code in the worktree
  *   3. Use Copilot to review the generated code
  *   4. Commit, merge back into main, and clean up
+ *
+ * Idempotent: can be run repeatedly without manual cleanup.
  */
 public class WorktreeAutoMergeExample {
 
     private static final Path REPO_ROOT = Path.of(".").toAbsolutePath().normalize();
+    private static final String GENERATED_FILE = "src/main/java/com/example/copilot/StringUtils.java";
 
     public static void main(String[] args) throws Exception {
         var featureBranch = "feature/copilot-generated-" + System.currentTimeMillis();
@@ -35,6 +36,9 @@ public class WorktreeAutoMergeExample {
 
         try (var client = new CopilotClient()) {
             client.start().get();
+
+            // Step 0: Clean up StringUtils.java from any previous run so merges don't conflict
+            cleanupPreviousRun();
 
             // Step 1: Create feature branch and worktree
             System.out.println("[1/6] Creating feature branch and worktree...");
@@ -55,8 +59,8 @@ public class WorktreeAutoMergeExample {
 
             // Step 3: Write generated code into the worktree
             System.out.println("[3/6] Writing generated code to worktree...");
-            var targetFile = worktreePath.resolve(
-                "src/main/java/com/example/copilot/StringUtils.java");
+            generatedCode = stripMarkdownFences(generatedCode);
+            var targetFile = worktreePath.resolve(GENERATED_FILE);
             Files.createDirectories(targetFile.getParent());
             Files.writeString(targetFile, generatedCode);
             System.out.println("       Wrote " + generatedCode.length() + " chars to " + targetFile.getFileName());
@@ -76,24 +80,35 @@ public class WorktreeAutoMergeExample {
 
             // Step 6: Merge feature branch into main
             System.out.println("[6/6] Merging " + featureBranch + " into main...");
-            git("merge", "--no-ff", featureBranch, "-m",
+            // Ensure no local StringUtils.java blocks the merge (belt-and-suspenders)
+            Files.deleteIfExists(REPO_ROOT.resolve(GENERATED_FILE));
+            git("merge", "--no-ff", "-X", "theirs", featureBranch, "-m",
                 "Merge " + featureBranch + " (auto-merge via Copilot workflow)");
 
             System.out.println("\n=== Merge Complete ===");
         } finally {
             // Clean up: remove worktree and delete feature branch
             System.out.println("\nCleaning up worktree and branch...");
-            try {
-                git("worktree", "remove", worktreePath.toString(), "--force");
-            } catch (RuntimeException e) {
-                System.err.println("Warning: could not remove worktree: " + e.getMessage());
-            }
-            try {
-                git("branch", "-d", featureBranch);
-            } catch (RuntimeException e) {
-                System.err.println("Warning: could not delete branch: " + e.getMessage());
-            }
+            tryGit("worktree", "remove", worktreePath.toString(), "--force");
+            tryGit("branch", "-D", featureBranch);
             System.out.println("Done.");
+        }
+    }
+
+    /**
+     * Removes StringUtils.java if it exists (tracked or untracked) so repeated runs
+     * start from a clean state.
+     */
+    private static void cleanupPreviousRun() throws IOException, InterruptedException {
+        var file = REPO_ROOT.resolve(GENERATED_FILE);
+        if (Files.exists(file)) {
+            System.out.println("[0] Cleaning up StringUtils.java from a previous run...");
+            // Try git rm (for tracked files), then delete manually (for untracked files)
+            if (!tryGit("rm", "-f", GENERATED_FILE)) {
+                Files.deleteIfExists(file);
+            }
+            // Commit the removal if there are staged changes
+            tryGit("commit", "-m", "chore: remove StringUtils.java before regeneration");
         }
     }
 
@@ -166,10 +181,35 @@ public class WorktreeAutoMergeExample {
         return result.toString();
     }
 
-    // ── Git helpers ──────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────
+
+    /** Strips markdown code fences that Copilot may wrap around generated code. */
+    private static String stripMarkdownFences(String code) {
+        var stripped = code.strip();
+        if (stripped.startsWith("```")) {
+            int firstNewline = stripped.indexOf('\n');
+            if (firstNewline != -1) {
+                stripped = stripped.substring(firstNewline + 1);
+            }
+            if (stripped.endsWith("```")) {
+                stripped = stripped.substring(0, stripped.length() - 3).stripTrailing();
+            }
+        }
+        return stripped;
+    }
 
     private static void git(String... args) throws IOException, InterruptedException {
         gitInDir(REPO_ROOT, args);
+    }
+
+    /** Runs a git command, returning true on success or false on non-zero exit. */
+    private static boolean tryGit(String... args) throws IOException, InterruptedException {
+        try {
+            gitInDir(REPO_ROOT, args);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     private static void gitInDir(Path dir, String... args)

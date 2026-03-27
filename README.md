@@ -207,6 +207,28 @@ Run it:
 ```bash
 mvn compile exec:java -Dexec.mainClass=com.example.copilot.AdvancedExample
 ```
+## Worktree Auto-Merge Workflow
+
+<img src="docs/worktree-auto-merge.png" alt="Worktree Auto-Merge Workflow" width="800"/>
+
+*This diagram shows the six-step automated workflow: create a worktree, generate code, review it, and merge — all driven by the Copilot SDK.*
+
+[`WorktreeAutoMergeExample.java`](src/main/java/com/example/copilot/WorktreeAutoMergeExample.java) demonstrates a fully automated Git workflow powered by the Copilot SDK:
+
+1. **Create Worktree** – Spins up a Git worktree on a new feature branch, isolating changes from `main`
+2. **Generate Code** – Uses the Copilot SDK to generate a `StringUtils` utility class with `reverse`, `isPalindrome`, and `truncate` methods
+3. **Write to Worktree** – Saves the generated source into the isolated worktree (stripping any markdown fences)
+4. **AI Code Review** – Opens a second Copilot session to review the generated code for correctness, null safety, and edge cases
+5. **Commit Changes** – Stages and commits the new file in the worktree
+6. **Merge to Main** – Performs a no-fast-forward merge back into `main`, then cleans up the worktree and branch
+
+The workflow is **idempotent** — it can be run repeatedly without manual cleanup. Previous artifacts are automatically removed before each run.
+
+Run it:
+
+```bash
+mvn compile exec:java -Dexec.mainClass=com.example.copilot.WorktreeAutoMergeExample
+```
 ## Prefer “zero project setup”? Use JBang
 
 If you don’t want to create a Maven or Gradle project just to try the SDK, you can run the repo’s example using [JBang](https://www.jbang.dev/). It’s the fastest “kick the tires” option when you’re experimenting or demoing.

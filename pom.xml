@@ -30,6 +30,18 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <!-- StringUtils.java is generated at runtime by WorktreeAutoMergeExample
+                         and may contain non-Java content between runs. Exclude from compilation. -->
+                    <excludes>
+                        <exclude>**/StringUtils.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
