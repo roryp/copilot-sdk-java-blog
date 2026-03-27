@@ -1,1 +1,0 @@
-Created `StringUtils.java` with reverse, isPalindrome, and truncate methods using Java 21 features (var, final class).
