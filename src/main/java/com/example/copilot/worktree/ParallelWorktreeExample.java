@@ -1,4 +1,4 @@
-package com.example.copilot;
+package com.example.copilot.worktree;
 
 import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;
@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 public class ParallelWorktreeExample {
 
     private static final Path REPO_ROOT = Path.of(".").toAbsolutePath().normalize();
-    private static final String PKG_DIR = "src/main/java/com/example/copilot";
+    private static final String PKG_DIR = "src/main/java/com/example/copilot/generated";
 
     private static final String[] GENERATED_FILES = {
         PKG_DIR + "/StringUtils.java",
@@ -70,7 +70,7 @@ public class ParallelWorktreeExample {
 
             var stringUtilsWorkflow = buildGenerateAndReviewAction(worktreePath, GENERATED_FILES[0],
                     """
-                    Generate a Java utility class called StringUtils in package com.example.copilot
+                    Generate a Java utility class called StringUtils in package com.example.copilot.generated
                     with a private constructor that throws AssertionError, and these static methods:
 
                     - reverse(String s) — returns null if s is null. Returns "" if s is empty.
@@ -96,7 +96,7 @@ public class ParallelWorktreeExample {
 
             var dateUtilsWorkflow = buildGenerateAndReviewAction(worktreePath, GENERATED_FILES[1],
                     """
-                    Generate a Java utility class called DateUtils in package com.example.copilot
+                    Generate a Java utility class called DateUtils in package com.example.copilot.generated
                     with these static methods:
                     - daysUntil(LocalDate target) — returns days from today to target date.
                       Throws NullPointerException via Objects.requireNonNull if target is null.
@@ -111,7 +111,7 @@ public class ParallelWorktreeExample {
 
             var fileUtilsWorkflow = buildGenerateAndReviewAction(worktreePath, GENERATED_FILES[2],
                     """
-                    Generate a Java utility class called FileUtils in package com.example.copilot
+                    Generate a Java utility class called FileUtils in package com.example.copilot.generated
                     with these static methods:
                     - readLines(Path file) — reads all lines, returns List<String>.
                       Throws NullPointerException via Objects.requireNonNull if file is null.
@@ -177,7 +177,7 @@ public class ParallelWorktreeExample {
                             <rules>
                             - You are a code generator. Output ONLY valid Java source code.
                             - No explanations, no markdown fences, no commentary.
-                            - Your response MUST begin with "package com.example.copilot;"
+                            - Your response MUST begin with "package com.example.copilot.generated;"
                             - Do NOT describe what you created. Just output the code.
                             </rules>
                             """))

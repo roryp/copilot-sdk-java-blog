@@ -1,4 +1,4 @@
-package com.example.copilot;
+package com.example.copilot.model;
 
 import java.time.Instant;
 

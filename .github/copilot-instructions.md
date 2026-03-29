@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a sample/demo repository for the **Copilot SDK for Java** (`com.github:copilot-sdk-java`). It showcases how to call GitHub Copilot programmatically from Java. All examples live under `src/main/java/com/example/copilot/`.
+This is a sample/demo repository for the **Copilot SDK for Java** (`com.github:copilot-sdk-java`). It showcases how to call GitHub Copilot programmatically from Java. Examples are organized into packages under `src/main/java/com/example/copilot/`.
 
 ## Code Style
 
@@ -11,16 +11,23 @@ This is a sample/demo repository for the **Copilot SDK for Java** (`com.github:c
 - Prefer `CompletableFuture` for async operations; call `.get()` to block when needed in examples.
 - Event handling follows the listener pattern: `session.on(evt -> { ... })` with pattern matching on event types (`AssistantMessageEvent`, `SessionIdleEvent`, `SessionErrorEvent`).
 - Keep example code self-contained in `main` methods or clearly named static helper methods.
-- Package: `com.example.copilot`.
+- Base package: `com.example.copilot`.
 
 ## Architecture
 
-- **Example.java** — Minimal "hello world" showing client → session → prompt → response.
-- **AdvancedExample.java** — Demonstrates system messages, multi-turn conversations, structured JSON output, and code generation.
-- **ApiResponse.java** — A Java record showcasing generated output as a reusable type.
-- **WorktreeAutoMergeExample.java** — Git worktree workflow: creates a feature branch/worktree, uses Copilot to generate and review code, commits, and merges back into main. All Git operations are local only.
-- **ParallelWorktreeExample.java** — Parallel version of the worktree workflow using LangChain4j's `AgenticServices.parallelBuilder()` to fan out 3 generate→review loops (StringUtils, DateUtils, FileUtils) concurrently, then commit and merge.
-- **StringUtils.java / DateUtils.java / FileUtils.java** — Runtime-generated utility classes produced by the worktree examples. Excluded from compilation in `pom.xml`; do not edit manually.
+### Package Layout
+
+- **`com.example.copilot`** — Base package with the minimal "hello world" example.
+  - **Example.java** — Minimal example: client → session → prompt → response.
+- **`com.example.copilot.advanced`** — Advanced SDK usage demonstrations.
+  - **AdvancedExample.java** — System messages, multi-turn conversations, structured JSON output, and code generation.
+- **`com.example.copilot.model`** — Data models and records.
+  - **ApiResponse.java** — A Java record showcasing generated output as a reusable type.
+- **`com.example.copilot.worktree`** — Git worktree-based code generation workflows.
+  - **WorktreeAutoMergeExample.java** — Creates a feature branch/worktree, uses Copilot to generate and review code, commits, and merges back into main. All Git operations are local only.
+  - **ParallelWorktreeExample.java** — Parallel version using LangChain4j's `AgenticServices.parallelBuilder()` to fan out 3 generate→review loops concurrently, then commit and merge.
+- **`com.example.copilot.generated`** — Runtime-generated utility classes produced by the worktree examples. Excluded from compilation in `pom.xml`; do not edit manually.
+  - **StringUtils.java / DateUtils.java / FileUtils.java**
 - **jbang_example.java** — Zero-setup runner via JBang (root-level, not in `src/`).
 - **generate_images.py** — Python utility for generating README diagram images via Azure OpenAI. Not part of the Java build.
 
@@ -34,13 +41,13 @@ This is a sample/demo repository for the **Copilot SDK for Java** (`com.github:c
 ./mvnw compile exec:java
 
 # Run the advanced example
-./mvnw compile exec:java "-Dexec.mainClass=com.example.copilot.AdvancedExample"
+./mvnw compile exec:java "-Dexec.mainClass=com.example.copilot.advanced.AdvancedExample"
 
 # Run the worktree auto-merge example
-./mvnw compile exec:java "-Dexec.mainClass=com.example.copilot.WorktreeAutoMergeExample"
+./mvnw compile exec:java "-Dexec.mainClass=com.example.copilot.worktree.WorktreeAutoMergeExample"
 
 # Run the parallel worktree example
-./mvnw compile exec:java "-Dexec.mainClass=com.example.copilot.ParallelWorktreeExample"
+./mvnw compile exec:java "-Dexec.mainClass=com.example.copilot.worktree.ParallelWorktreeExample"
 
 # Run via JBang (zero project setup)
 jbang jbang_example.java

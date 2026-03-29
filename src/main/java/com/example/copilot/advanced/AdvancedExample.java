@@ -1,4 +1,4 @@
-package com.example.copilot;
+package com.example.copilot.advanced;
 
 import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;

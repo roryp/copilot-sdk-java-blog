@@ -52,12 +52,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <!-- StringUtils.java is generated at runtime by WorktreeAutoMergeExample
+                    <!-- Generated utility classes are produced at runtime by the worktree examples
                          and may contain non-Java content between runs. Exclude from compilation. -->
                     <excludes>
-                        <exclude>**/StringUtils.java</exclude>
-                        <exclude>**/DateUtils.java</exclude>
-                        <exclude>**/FileUtils.java</exclude>
+                        <exclude>**/generated/*.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>

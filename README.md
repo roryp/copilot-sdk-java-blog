@@ -194,7 +194,7 @@ That’s it—you just called Copilot from Java.
 
 *This diagram shows the five advanced capabilities available through the SDK.*
 
-For more complex scenarios, check out [`AdvancedExample.java`](src/main/java/com/example/copilot/AdvancedExample.java) which demonstrates:
+For more complex scenarios, check out [`AdvancedExample.java`](src/main/java/com/example/copilot/advanced/AdvancedExample.java) which demonstrates:
 
 - **System Messages** – Customize AI behavior with `SystemMessageConfig`
 - **Code Review** – Submit code for AI analysis of thread safety, null safety, and best practices
@@ -205,7 +205,7 @@ For more complex scenarios, check out [`AdvancedExample.java`](src/main/java/com
 Run it:
 
 ```bash
-mvn compile exec:java -Dexec.mainClass=com.example.copilot.AdvancedExample
+mvn compile exec:java -Dexec.mainClass=com.example.copilot.advanced.AdvancedExample
 ```
 ## Worktree Auto-Merge Workflow
 
@@ -213,7 +213,7 @@ mvn compile exec:java -Dexec.mainClass=com.example.copilot.AdvancedExample
 
 *This diagram shows the six-step automated workflow: create a worktree, generate code, review it, and merge — all driven by the Copilot SDK.*
 
-[`WorktreeAutoMergeExample.java`](src/main/java/com/example/copilot/WorktreeAutoMergeExample.java) demonstrates a fully automated Git workflow powered by the Copilot SDK:
+[`WorktreeAutoMergeExample.java`](src/main/java/com/example/copilot/worktree/WorktreeAutoMergeExample.java) demonstrates a fully automated Git workflow powered by the Copilot SDK:
 
 1. **Create Worktree** – Spins up a Git worktree on a new feature branch, isolating changes from `main`
 2. **Generate Code** – Uses the Copilot SDK to generate a `StringUtils` utility class with `reverse`, `isPalindrome`, and `truncate` methods
@@ -237,7 +237,7 @@ The workflow is **idempotent** — it can be run repeatedly without manual clean
 Run it:
 
 ```bash
-mvn compile exec:java -Dexec.mainClass=com.example.copilot.WorktreeAutoMergeExample
+mvn compile exec:java -Dexec.mainClass=com.example.copilot.worktree.WorktreeAutoMergeExample
 ```
 ## Parallel Worktree Workflow (LangChain4j Agentic)
 
@@ -245,7 +245,7 @@ mvn compile exec:java -Dexec.mainClass=com.example.copilot.WorktreeAutoMergeExam
 
 *This diagram shows the fan-out pipeline: 3 parallel lanes each run a generate→review loop with retry, converging into an "All LGTM?" gate — if any file fails after 3 attempts, the entire merge is blocked.*
 
-[`ParallelWorktreeExample.java`](src/main/java/com/example/copilot/ParallelWorktreeExample.java) extends the worktree pattern with **parallel fan-out** using [LangChain4j's agentic module](https://github.com/langchain4j/langchain4j) (`AgenticServices.parallelBuilder()`), inspired by LangChain4j's [loop workflow pattern](https://docs.langchain4j.dev/tutorials/agents/):
+[`ParallelWorktreeExample.java`](src/main/java/com/example/copilot/worktree/ParallelWorktreeExample.java) extends the worktree pattern with **parallel fan-out** using [LangChain4j's agentic module](https://github.com/langchain4j/langchain4j) (`AgenticServices.parallelBuilder()`), inspired by LangChain4j's [loop workflow pattern](https://docs.langchain4j.dev/tutorials/agents/):
 
 ```
                           ╭→ Lane A: generate StringUtils → review → retry if FAIL ─╮
@@ -283,7 +283,7 @@ The feedback loop is the key to reliability: rather than just retrying blindly, 
 Run it:
 
 ```bash
-mvn compile exec:java -Dexec.mainClass=com.example.copilot.ParallelWorktreeExample
+mvn compile exec:java -Dexec.mainClass=com.example.copilot.worktree.ParallelWorktreeExample
 ```
 
 > Requires `langchain4j-agentic` (v1.12.2) — already included in the project's BOM.

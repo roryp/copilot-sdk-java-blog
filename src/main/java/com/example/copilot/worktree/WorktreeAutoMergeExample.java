@@ -1,4 +1,4 @@
-package com.example.copilot;
+package com.example.copilot.worktree;
 
 import com.github.copilot.sdk.*;
 import com.github.copilot.sdk.events.*;
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public class WorktreeAutoMergeExample {
 
     private static final Path REPO_ROOT = Path.of(".").toAbsolutePath().normalize();
-    private static final String GENERATED_FILE = "src/main/java/com/example/copilot/StringUtils.java";
+    private static final String GENERATED_FILE = "src/main/java/com/example/copilot/generated/StringUtils.java";
 
     public static void main(String[] args) throws Exception {
         var featureBranch = "feature/copilot-generated-" + System.currentTimeMillis();
@@ -50,7 +50,7 @@ public class WorktreeAutoMergeExample {
             // Step 2: Ask Copilot to generate code
             System.out.println("[2/6] Asking Copilot to generate code...");
             var generatedCode = generateCodeWithCopilot(client, """
-                Generate a Java utility class called StringUtils in package com.example.copilot
+                Generate a Java utility class called StringUtils in package com.example.copilot.generated
                 with these static methods:
                 - reverse(String s) — reverses a string, handles null by returning null
                 - isPalindrome(String s) — checks if string is a palindrome (case-insensitive)
@@ -130,7 +130,7 @@ public class WorktreeAutoMergeExample {
                             <rules>
                             - You are a code generator. Output ONLY valid Java source code.
                             - No explanations, no markdown fences, no commentary.
-                            - Your response MUST begin with "package com.example.copilot;"
+                            - Your response MUST begin with "package com.example.copilot.generated;"
                             - Do NOT describe what you created. Just output the code.
                             </rules>
                             """))
