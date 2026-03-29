@@ -241,24 +241,27 @@ mvn compile exec:java -Dexec.mainClass=com.example.copilot.WorktreeAutoMergeExam
 ```
 ## Parallel Worktree Workflow (LangChain4j Agentic)
 
-<img src="docs/parallel-worktree.png" alt="Parallel Worktree Workflow — LangChain4j + Copilot SDK" width="800"/>
+<img src="docs/parallel-worktree.png" alt="Parallel Generate → Review Workflow — LangChain4j + Copilot SDK" width="800"/>
 
-*This diagram shows the fan-out/fan-in pipeline: 3 generation agents and 3 review agents run concurrently via LangChain4j's parallelBuilder().*
+*This diagram shows the fan-out pipeline: 3 parallel lanes each run a generate→review loop with retry, gated by code review before proceeding to commit.*
 
-[`ParallelWorktreeExample.java`](src/main/java/com/example/copilot/ParallelWorktreeExample.java) extends the worktree pattern with **parallel fan-out** using [LangChain4j's agentic module](https://github.com/langchain4j/langchain4j) (`AgenticServices.parallelBuilder()`):
+[`ParallelWorktreeExample.java`](src/main/java/com/example/copilot/ParallelWorktreeExample.java) extends the worktree pattern with **parallel fan-out** using [LangChain4j's agentic module](https://github.com/langchain4j/langchain4j) (`AgenticServices.parallelBuilder()`), inspired by LangChain4j's [loop workflow pattern](https://docs.langchain4j.dev/tutorials/agents/):
 
 ```
-                          ╭→ Agent A: generate StringUtils.java ─╮
-Create worktree ──────────├→ Agent B: generate DateUtils.java   ─├→ Commit all → Merge
-  (sequential setup)      ╰→ Agent C: generate FileUtils.java   ─╯
-                                     (parallel fan-out)
-
-                          ╭→ Review StringUtils.java ─╮
-                          ├→ Review DateUtils.java   ─├→ (parallel fan-out)
-                          ╰→ Review FileUtils.java   ─╯
+                          ╭→ Lane A: generate StringUtils → review → retry if FAIL ─╮
+Create worktree ──────────├→ Lane B: generate DateUtils  → review → retry if FAIL  ─├→ Commit → Merge
+  (sequential setup)      ╰→ Lane C: generate FileUtils  → review → retry if FAIL  ─╯
+                                     (parallel fan-out, each lane loops up to 3×)
 ```
 
-Each sub-agent wraps a Copilot SDK session. LangChain4j's `parallelBuilder()` handles concurrent execution — all 3 files are generated simultaneously, then all 3 are reviewed simultaneously, before committing and merging.
+Each lane wraps a Copilot SDK session and runs its own **generate→review loop**:
+
+1. **Generate** — Copilot produces the utility class with explicit requirements for null safety, edge cases, and Unicode handling
+2. **Review** — A second Copilot session reviews the code, responding with `LGTM` (pass) or `FAIL` (with issues)
+3. **Retry with feedback** — If the review fails, the reviewer's feedback is appended to the generation prompt and the code is regenerated (up to 3 attempts)
+4. **Gate** — If all 3 attempts fail, the workflow throws and blocks the commit — no bad code gets merged
+
+This is analogous to LangChain4j's loop workflow where a scorer agent evaluates output quality and the loop continues until a threshold is met. Here, the "scorer" is the Copilot code reviewer and the threshold is `LGTM`.
 
 Run it:
 

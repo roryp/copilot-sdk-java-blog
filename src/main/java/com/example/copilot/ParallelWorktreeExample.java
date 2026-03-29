@@ -16,14 +16,15 @@ import java.util.concurrent.CompletableFuture;
  *
  * Demonstrates using LangChain4j's parallelBuilder() + Git worktrees + Copilot SDK to:
  *   1. Create a Git worktree for a feature branch
- *   2. Fan out 3 Copilot code-generation agents in parallel (StringUtils, DateUtils, FileUtils)
- *   3. Write all generated files into the worktree
- *   4. Fan out 3 Copilot review agents in parallel
- *   5. Commit all changes in the worktree
- *   6. Merge the feature branch back into main and clean up
+ *   2. Fan out 3 parallel generate→review workflows (StringUtils, DateUtils, FileUtils)
+ *      Each workflow loops: generate code → review → retry if review fails (up to 3 attempts)
+ *   3. Commit all changes in the worktree
+ *   4. Merge the feature branch back into main and clean up
  *
  * The parallel fan-out uses AgenticServices.parallelBuilder() from langchain4j-agentic,
- * where each sub-agent wraps a Copilot SDK session that generates one utility class.
+ * where each sub-agent is a generate→review loop wrapping Copilot SDK sessions.
+ * Inspired by LangChain4j's loop workflow pattern: if a review fails, the code is
+ * regenerated and re-reviewed, ensuring quality gates are enforced before proceeding.
  *
  * All Git operations are LOCAL ONLY — no push or remote calls.
  * Idempotent: can be run repeatedly without manual cleanup.
@@ -60,87 +61,76 @@ public class ParallelWorktreeExample {
             cleanupPreviousRun();
 
             // Step 1: Create feature branch and worktree
-            System.out.println("[1/6] Creating feature branch and worktree...");
+            System.out.println("[1/4] Creating feature branch and worktree...");
             git("branch", featureBranch);
             git("worktree", "add", worktreePath.toString(), featureBranch);
 
-            // Step 2: Parallel code generation — 3 agents run concurrently via parallelBuilder()
-            System.out.println("[2/6] Generating 3 utility classes in parallel...");
+            // Step 2: Parallel generate→review — each class runs its own generate→review loop
+            System.out.println("[2/4] Running 3 generate→review workflows in parallel...");
 
-            var generateStringUtils = AgenticServices.agentAction(() -> {
-                var code = generateWithCopilot("""
+            var stringUtilsWorkflow = buildGenerateAndReviewAction(worktreePath, GENERATED_FILES[0],
+                    """
                     Generate a Java utility class called StringUtils in package com.example.copilot
                     with these static methods:
-                    - reverse(String s) — reverses a string, handles null by returning null
-                    - isPalindrome(String s) — checks if string is a palindrome (case-insensitive)
-                    - truncate(String s, int maxLen) — truncates with "..." if longer than maxLen
+                    - reverse(String s) — reverses a string. Returns null if s is null.
+                      Use codePoints() for proper Unicode surrogate pair handling.
+                    - isPalindrome(String s) — checks if string is a palindrome (case-insensitive).
+                      Returns false if s is null. Use Locale.ROOT for toLowerCase.
+                    - truncate(String s, int maxLen) — truncates with "..." if longer than maxLen.
+                      Returns null if s is null. Throws IllegalArgumentException if maxLen < 0.
+                      If maxLen < 3 return s.substring(0, maxLen) without ellipsis.
                     Use Java 21 features. No external dependencies.
                     Output ONLY the raw Java source code. No markdown fences, no explanation.
-                    """);
-                writeToWorktree(worktreePath, GENERATED_FILES[0], code);
-                System.out.println("       ✓ StringUtils.java generated");
-            });
+                    """, "StringUtils.java");
 
-            var generateDateUtils = AgenticServices.agentAction(() -> {
-                var code = generateWithCopilot("""
+            var dateUtilsWorkflow = buildGenerateAndReviewAction(worktreePath, GENERATED_FILES[1],
+                    """
                     Generate a Java utility class called DateUtils in package com.example.copilot
                     with these static methods:
-                    - daysUntil(LocalDate target) — returns days from today to target date
-                    - isWeekend(LocalDate date) — returns true if Saturday or Sunday
+                    - daysUntil(LocalDate target) — returns days from today to target date.
+                      Throws NullPointerException via Objects.requireNonNull if target is null.
+                    - isWeekend(LocalDate date) — returns true if Saturday or Sunday.
+                      Throws NullPointerException via Objects.requireNonNull if date is null.
                     - formatRelative(LocalDate date) — returns "today", "yesterday", "3 days ago", etc.
+                      Throws NullPointerException via Objects.requireNonNull if date is null.
+                      Use long (not int) for day difference calculations throughout. No casts.
                     Use Java 21 features (java.time). No external dependencies.
                     Output ONLY the raw Java source code. No markdown fences, no explanation.
-                    """);
-                writeToWorktree(worktreePath, GENERATED_FILES[1], code);
-                System.out.println("       ✓ DateUtils.java generated");
-            });
+                    """, "DateUtils.java");
 
-            var generateFileUtils = AgenticServices.agentAction(() -> {
-                var code = generateWithCopilot("""
+            var fileUtilsWorkflow = buildGenerateAndReviewAction(worktreePath, GENERATED_FILES[2],
+                    """
                     Generate a Java utility class called FileUtils in package com.example.copilot
                     with these static methods:
-                    - readLines(Path file) — reads all lines, returns List<String>
+                    - readLines(Path file) — reads all lines, returns List<String>.
+                      Throws NullPointerException via Objects.requireNonNull if file is null.
                     - humanReadableSize(long bytes) — returns "1.2 KB", "3.4 MB", etc.
-                    - extension(Path file) — returns file extension without dot, or empty string
+                      Throws IllegalArgumentException if bytes is negative.
+                    - extension(Path file) — returns file extension without dot, or empty string.
+                      Throws NullPointerException via Objects.requireNonNull if file is null.
+                      Returns "" for hidden files like ".bashrc" (when lastDot index is 0).
+                      Handles root paths where getFileName() may return null.
                     Use Java 21 features (java.nio.file). No external dependencies.
                     Output ONLY the raw Java source code. No markdown fences, no explanation.
-                    """);
-                writeToWorktree(worktreePath, GENERATED_FILES[2], code);
-                System.out.println("       ✓ FileUtils.java generated");
-            });
+                    """, "FileUtils.java");
 
-            // Fan out all 3 generators in parallel using LangChain4j's parallelBuilder()
-            UntypedAgent parallelGenerator = AgenticServices.parallelBuilder()
-                    .name("parallelCodeGenerator")
-                    .subAgents(generateStringUtils, generateDateUtils, generateFileUtils)
+            // Fan out all 3 generate→review workflows in parallel
+            UntypedAgent parallelWorkflow = AgenticServices.parallelBuilder()
+                    .name("parallelGenerateAndReview")
+                    .subAgents(stringUtilsWorkflow, dateUtilsWorkflow, fileUtilsWorkflow)
                     .build();
 
-            parallelGenerator.invoke(Map.of("input", "generate utility classes"));
-            System.out.println("       All 3 files generated in parallel.\n");
+            parallelWorkflow.invoke(Map.of("input", "generate and review utility classes"));
+            System.out.println("       All 3 files generated and reviewed.\n");
 
-            // Step 3: Parallel code review — 3 review agents run concurrently
-            System.out.println("[3/6] Reviewing all 3 files in parallel...");
-
-            var reviewStringUtils = buildReviewAction(worktreePath, GENERATED_FILES[0]);
-            var reviewDateUtils = buildReviewAction(worktreePath, GENERATED_FILES[1]);
-            var reviewFileUtils = buildReviewAction(worktreePath, GENERATED_FILES[2]);
-
-            UntypedAgent parallelReviewer = AgenticServices.parallelBuilder()
-                    .name("parallelCodeReviewer")
-                    .subAgents(reviewStringUtils, reviewDateUtils, reviewFileUtils)
-                    .build();
-
-            parallelReviewer.invoke(Map.of("input", "review utility classes"));
-            System.out.println();
-
-            // Step 4: Commit in the worktree
-            System.out.println("[4/6] Committing changes in worktree...");
+            // Step 3: Commit in the worktree
+            System.out.println("[3/4] Committing changes in worktree...");
             gitInDir(worktreePath, "add", "-A");
             gitInDir(worktreePath, "commit", "-m",
                 "feat: add Copilot-generated utility classes (parallel generation)");
 
-            // Step 5: Merge feature branch into main
-            System.out.println("[5/6] Merging " + featureBranch + " into main...");
+            // Step 4: Merge feature branch into main
+            System.out.println("[4/4] Merging " + featureBranch + " into main...");
             for (var file : GENERATED_FILES) {
                 Files.deleteIfExists(REPO_ROOT.resolve(file));
             }
@@ -204,7 +194,9 @@ public class ParallelWorktreeExample {
                     .setContent("""
                         <rules>
                         - You are a concise code reviewer.
-                        - Reply LGTM if the code is correct, or list issues briefly.
+                        - Your first word MUST be either "LGTM" or "FAIL".
+                        - Reply "LGTM" if the code is correct, followed by a brief note.
+                        - Reply "FAIL" if there are issues, followed by a brief list of problems.
                         - Focus on null safety, edge cases, and correctness.
                         </rules>
                         """))
@@ -213,16 +205,52 @@ public class ParallelWorktreeExample {
             "Review this Java code for correctness and edge cases:\n```java\n" + code + "\n```");
     }
 
-    /** Builds a review action that reads a file from the worktree and reviews it. */
-    private static AgenticServices.AgentAction buildReviewAction(Path worktreePath, String filePath) {
+    /**
+     * Builds a combined generate→review workflow for a single file.
+     * Loops up to 3 times: generate code via Copilot, review it, retry if review fails.
+     * Throws if the review still fails after all attempts — blocking the workflow.
+     */
+    private static AgenticServices.AgentAction buildGenerateAndReviewAction(
+            Path worktreePath, String filePath, String generatePrompt, String className) {
         return AgenticServices.agentAction(() -> {
-            var code = Files.readString(worktreePath.resolve(filePath));
-            var review = reviewWithCopilot(code);
-            var fileName = Path.of(filePath).getFileName();
-            System.out.println("       --- " + fileName + " Review ---");
-            System.out.println("       " + review.replace("\n", "\n       "));
-            System.out.println("       --- End " + fileName + " Review ---");
+            String lastReviewFeedback = null;
+            for (int attempt = 1; attempt <= 3; attempt++) {
+                // On retry, append the review feedback so Copilot can fix the issues
+                var prompt = generatePrompt;
+                if (lastReviewFeedback != null) {
+                    prompt += "\nThe previous attempt was rejected by a code reviewer. "
+                            + "Fix ALL of these issues:\n" + lastReviewFeedback
+                            + "\nOutput ONLY the corrected Java source code.";
+                }
+
+                var code = generateWithCopilot(prompt);
+                writeToWorktree(worktreePath, filePath, code);
+                System.out.println("       ✓ " + className + " generated (attempt " + attempt + ")");
+
+                var review = reviewWithCopilot(code);
+                System.out.println("       --- " + className + " Review (attempt " + attempt + ") ---");
+                System.out.println("       " + review.replace("\n", "\n       "));
+                System.out.println("       --- End " + className + " Review ---");
+
+                if (isReviewPassed(review)) {
+                    System.out.println("       ✓ " + className + " passed review");
+                    return;
+                }
+                lastReviewFeedback = review;
+                System.out.println("       ✗ " + className + " failed review");
+                if (attempt < 3) {
+                    System.out.println("       ↻ Regenerating " + className + " with review feedback...");
+                }
+            }
+            throw new RuntimeException(className + " failed code review after 3 attempts");
         });
+    }
+
+    /** Checks if a Copilot review response indicates approval. */
+    private static boolean isReviewPassed(String review) {
+        var lower = review.strip().toLowerCase();
+        if (lower.startsWith("fail")) return false;
+        return lower.startsWith("lgtm") || lower.startsWith("looks good") || lower.contains("lgtm");
     }
 
     /** Writes generated code to a file in the worktree. */
