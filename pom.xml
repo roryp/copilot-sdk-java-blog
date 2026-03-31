@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.github</groupId>
             <artifactId>copilot-sdk-java</artifactId>
-            <version>0.1.32-java.0</version>
+            <version>0.2.1-java.0</version>
         </dependency>
         <dependency>
             <groupId>dev.langchain4j</groupId>

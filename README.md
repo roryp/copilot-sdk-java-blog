@@ -114,14 +114,14 @@ If you’re using Maven:
 <dependency>
   <groupId>com.github</groupId>
   <artifactId>copilot-sdk-java</artifactId>
-  <version>0.1.32-java.0</version>
+  <version>0.2.1-java.0</version>
 </dependency>
 ```
 
 Or Gradle:
 
 ```groovy
-implementation 'com.github:copilot-sdk-java:0.1.32-java.0'
+implementation 'com.github:copilot-sdk-java:0.2.1-java.0'
 ```
 
 ### Your first “Copilot from Java” call
